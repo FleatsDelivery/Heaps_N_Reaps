@@ -1,6 +1,6 @@
 -- Control Panel for Heaps n' Reaps
 
-PLAYERS_PER_TEAM = 7
+PLAYERS_PER_TEAM = 10
 
 LOBBY_WAIT_TIME = 20
 PRE_GAME_TIME = 10

@@ -1,0 +1,11 @@
+"AddonInfo"
+{
+    // Internal name of the addon
+    "addonname"        "heaps_n_reaps"
+
+    // Display name shown in the Arcade
+    "displayname"      "Heaps n' Reaps"
+
+    // Entry script for your gamemode
+    "vscripts"         "addon_game_mode"
+}
