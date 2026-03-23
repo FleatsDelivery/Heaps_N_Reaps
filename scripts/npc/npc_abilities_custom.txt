@@ -1,4 +1,113 @@
 "DOTAAbilities"
 {
+	"rattletrap_hookshot"
+	{	
+		"AbilityCastRange"				"500 1000 1500"	
+		"AbilityValues"
+		{
+			"duration" 	  "0.5 0.75 1.0"
+			"speed"		"1000 1500 2000"
+		}
+	}
 
+	"pudge_meat_hook"
+	{		
+		// Casting
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityCastPoint"				"0.5 0.4 0.3 0.2"
+
+		// Cost
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityManaCost"				"100"
+
+		// Special
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityValues"
+		{
+			"damage"
+			{
+				"value"									"150 200 250 300"
+				"special_bonus_unique_pudge_7"			"+300"
+			}
+			"hook_speed"								
+			{
+				"value"						"1600.0"
+			}
+
+			"hook_width"								"80"
+			"AbilityCastRange"								
+			{
+				"value"						"1000"
+			}
+			
+			"vision_radius"		"500 500 500 500"
+			"vision_duration"	"4.0 4.0 4.0 4.0"
+
+			"AbilityCooldown"				
+			{
+				"value"								"20 18 16 14"
+				"special_bonus_unique_pudge_5"		"3"
+			}
+
+			"distance_to_damage"
+			{
+				"special_bonus_shard"	 "100"				
+			}
+			
+			"cooldown_reduction_pct_allied_hook"
+			{
+				"special_bonus_shard"	"100"
+			}
+
+		}
+	}
+
+	//=================================================================================================================
+	// Ability: Necrolyte's Reaper's Scythe
+	//=================================================================================================================
+	"necrolyte_reapers_scythe"
+	{
+		// General
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityType"					"ABILITY_TYPE_ULTIMATE"
+		"AbilityBehavior"				"DOTA_ABILITY_BEHAVIOR_UNIT_TARGET"		
+		"AbilityUnitTargetTeam"			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"			"DOTA_UNIT_TARGET_HERO"
+		"SpellImmunityType"				"SPELL_IMMUNITY_ENEMIES_NO"
+		"SpellDispellableType"			"SPELL_DISPELLABLE_NO"
+		"AbilityUnitDamageType"			"DAMAGE_TYPE_PURE"	
+		"FightRecapLevel"				"2"
+		"AbilitySound"					"Hero_Necrolyte.ReapersScythe.Target"
+
+		// Casting
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityCastPoint"				"0.5"
+		"AbilityCastAnimation"		"ACT_DOTA_CAST_ABILITY_4"
+
+		// Time		
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityCooldown"				"60"
+
+		// Cost
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityManaCost"				"200 300 400"		
+
+		// Stats
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityModifierSupportValue"	"0.1"	// Primarily about the damage
+		
+		// Special
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilityValues"
+		{
+			"damage_per_health"			"0.5 0.6 0.7"
+			"stun_duration"				"0.8 0.9 1.0"
+			"hp_per_kill"				"5 5 5"
+			"mana_per_kill"				"5 5 5"
+			"AbilityCastRange"
+			{
+				"value"						"300"
+			}
+		}
+	}
 }

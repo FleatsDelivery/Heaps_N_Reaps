@@ -12,7 +12,8 @@ end
 function modifier_bonus_cast_range:GetModifierCastRangeBonusStacking(params)
     local ability = params.ability
     if ability and ability:GetAbilityName() == "pudge_meat_hook" then
-        return BONUS_CAST_RANGE
+        local kills = self:GetParent()._hnr_kills or 0
+        return BONUS_CAST_RANGE + (kills * HOOK_KILL_RANGE_BONUS)
     end
     return 0
 end

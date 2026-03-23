@@ -13,6 +13,7 @@ LinkLuaModifier("modifier_max_health_cap", "modifiers/modifier_max_health_cap.lu
 LinkLuaModifier("modifier_bonus_vision", "modifiers/modifier_bonus_vision.lua", LUA_MODIFIER_MOTION_NONE)
 LinkLuaModifier("modifier_cooldown_reduction", "modifiers/modifier_cooldown_reduction.lua", LUA_MODIFIER_MOTION_NONE)
 
+
 -----------------------------------------------------
 -- Precache & Init
 -----------------------------------------------------
@@ -25,7 +26,7 @@ function Precache(context)
 
     -- Clockwerk Hookshot
     PrecacheResource("particle", "particles/units/heroes/hero_rattletrap/rattletrap_hookshot.vpcf", context)
-    PrecacheResource("particle", "particles/units/heroes/hero_rattletrap/rattletrap_hookshot_proj.vpcf", context)
+
     PrecacheResource("soundfile", "soundevents/game_sounds_heroes/game_sounds_rattletrap.vsndevts", context)
 
     print("[HEAPS_N_REAPS] Precache complete.")
@@ -66,7 +67,7 @@ function HeapsNReaps:ReplacePudgeAbilities(hero)
     if hero:HasAbility("pudge_rot") then
         local hookshot = hero:AddAbility("rattletrap_hookshot")
         if hookshot then
-            hookshot:SetLevel(4)
+            hookshot:SetLevel(3)
             hero:SwapAbilities("pudge_rot", "rattletrap_hookshot", false, true)
             hero:RemoveAbility("pudge_rot")
         end
@@ -86,7 +87,7 @@ function HeapsNReaps:ReplacePudgeAbilities(hero)
     if hero:HasAbility("pudge_dismember") then
         local scythe = hero:AddAbility("necrolyte_reapers_scythe")
         if scythe then
-            scythe:SetLevel(4)
+            scythe:SetLevel(3)
             hero:SwapAbilities("pudge_dismember", "necrolyte_reapers_scythe", false, true)
             hero:RemoveAbility("pudge_dismember")
         end
@@ -111,6 +112,9 @@ function HeapsNReaps:ApplyModifiers(hero)
     if not hero:HasModifier("modifier_cooldown_reduction") then
         hero:AddNewModifier(hero, nil, "modifier_cooldown_reduction", {})
     end
+    if not hero:HasModifier("modifier_hookshot_speed") then
+        hero:AddNewModifier(hero, nil, "modifier_hookshot_speed", {})
+    end
 end
 
 -----------------------------------------------------
@@ -127,19 +131,18 @@ end
 -----------------------------------------------------
 function HeapsNReaps:InitializeHero(hero)
     if not IsValidEntity(hero) or not hero:IsRealHero() then return end
-    if hero._HeapsNReapsInit then return end
-    hero._HeapsNReapsInit = true
+    if hero._hnr_init then return end
+    hero._hnr_init = true
 
     print("[HEAPS_N_REAPS] Initializing hero: " .. hero:GetUnitName())
 
     -- Level hero & max abilities
-    self:LevelHero(hero, 30)
+    self:LevelHero(hero, HERO_STARTING_LEVEL)
 
     -- Give starting items
     self:GiveItemSafe(hero, "item_boots")
     self:GiveItemSafe(hero, "item_magic_wand")
     self:GiveItemSafe(hero, "item_aghanims_shard")
-    self:GiveItemSafe(hero, "item_smoke_of_deceit")
     self:GiveItemSafe(hero, "item_magnifying_monocle")
 
     -- Replace Pudge abilities
@@ -172,6 +175,7 @@ function HeapsNReaps:InitGameMode()
     GameRules:SetCustomGameTeamMaxPlayers(DOTA_TEAM_GOODGUYS, PLAYERS_PER_TEAM)
     GameRules:SetCustomGameTeamMaxPlayers(DOTA_TEAM_BADGUYS, PLAYERS_PER_TEAM)
 
+
     GameRules:SetHeroSelectionTime(0)
     GameRules:SetStrategyTime(0)
     GameRules:SetShowcaseTime(0)
@@ -191,6 +195,7 @@ function HeapsNReaps:InitGameMode()
     GameRules:SetSameHeroSelectionEnabled(true)
     mode:SetCustomGameForceHero("npc_dota_hero_pudge")
 
+
     -- NPC Spawn listener
     ListenToGameEvent("npc_spawned", function(event) self:OnNPCSpawned(event) end, nil)
 
@@ -198,6 +203,26 @@ function HeapsNReaps:InitGameMode()
     Timers:CreateTimer(1.0, function()
         GameRules:SetTimeOfDay(0.25)
         return 5.0
+    end)
+
+    -- Out-of-bounds protection: track last safe position, teleport back if off navmesh
+    Timers:CreateTimer(0.5, function()
+        for _, hero in pairs(HeroList:GetAllHeroes()) do
+            if IsValidEntity(hero) and hero:IsAlive() and hero:IsRealHero() then
+                local pos = hero:GetAbsOrigin()
+                if GridNav:IsTraversable(pos) then
+                    hero._lastSafePos = pos
+                else
+                    local safePos = hero._lastSafePos
+                    if safePos then
+                        hero:SetAbsOrigin(safePos)
+                        FindClearSpaceForUnit(hero, safePos, true)
+                        print("[HEAPS_N_REAPS] Returned " .. hero:GetUnitName() .. " to map bounds.")
+                    end
+                end
+            end
+        end
+        return 0.5
     end)
 
     -- Game state listener
@@ -216,8 +241,7 @@ end
 -----------------------------------------------------
 function HeapsNReaps:OnNPCSpawned(event)
     local hero = EntIndexToHScript(event.entindex)
-    if not hero or not hero:IsRealHero() or hero._heaps_reaps_init then return end
-    hero._heaps_reaps_init = true
+    if not hero or not hero:IsRealHero() or hero._hnr_init then return end
 
     print("[HEAPS_N_REAPS] NPC Spawned: "..hero:GetUnitName())
     self:InitializeHero(hero)
@@ -232,10 +256,13 @@ ListenToGameEvent("entity_killed", function(event)
     if not (killed and killed:IsRealHero()) then return end
 
     if attacker and attacker:IsRealHero() and attacker:GetUnitName() == "npc_dota_hero_pudge" then
+        -- Track personal kills for scaling
+        attacker._hnr_kills = (attacker._hnr_kills or 0) + 1
+        -- Grow model size
         attacker:SetModelScale(attacker:GetModelScale() + KILL_SIZE_SCALING)
     end
 
-    HeapsNReaps:EndGameCheck()
+    GameRules.HeapsNReaps:EndGameCheck()
 end, nil)
 
 -----------------------------------------------------
